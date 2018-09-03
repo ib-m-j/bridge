@@ -11,7 +11,12 @@ class Corde:
         self.length = length
         assert(start >= 0 and start < n), "corde start value {} illegal".format(start)
         assert(length>=1 and length < n), "corde length value {} illegal".format(length)
-        print("corde")
+        #normalized not good for directed cordes
+        if self.start + self.length >= self.universe:
+            self.normalized = ((self.start+self.length) % self.universe, self.start)
+        else:
+            self.normalized = (self.start, self.start + self.length)
+        #print("corde")
 
     def __eq__(self, other):
         res = (self.universe == other.universe)
@@ -27,6 +32,15 @@ class Corde:
         return "Universe {}: start {}, length {}".format(
             self.universe, self.start, self.length)
 
+    def graphic(self):
+        res = ""
+        res = res + (3*self.normalized[0] + 2)*" "
+        res = res + ((self.normalized[1] - self.normalized[0])*3 + 1)*"."
+        return res
+
+
+            
+        
     def avoids(self, other):
         res = (self.universe == other.universe and 
                self.start != other.start and 
@@ -55,6 +69,17 @@ class CordeSet:
             res = res + "\tcorde: {}\n ".format(c)
         return res
     
+    def graphic(self):
+        res = ""
+        for x in range(self.universe):
+            res = res + "{:3d}".format(x)
+        res = res + "\n"
+
+        for c in self.cordes:
+            res = res + c.graphic() + "\n"
+
+        return res
+    
     def addCorde(self, corde):
         assert self.hasRoom(corde) , "corde already inserted"
         self.cordes.append(corde)
@@ -66,6 +91,8 @@ class CordeSet:
                 return False
         return True   
 
+    def clone(self):
+        return CordeSet(self.universe, self.cordes[:])
     
             
 class CordeSets:        
@@ -89,26 +116,38 @@ class CordeSets:
         self.exclusiveCords = []
         all = self.allCordes()
         allTestCords = all[:]
-        while True:
-            result = CordeSet(self.universe, [])
-            newRes = self.addExclusiveCord(result,allTestCords.__iter__())
-            if newRes:
-                self.exclusiveCords.append(newRes)
-            print(newRes)
-        for x in self.exclusiveCords:
-            print(x)
+        #for (start, cord) in enumerate(allTestCords):
+        #    result = CordeSet(self.universe, [])
+        #    newRes = self.addExclusiveCord(self.exclusiveCords, result, allTestCords[start+1:][:])
+        
+        result = CordeSet(self.universe, [])
+        newRes = self.addExclusiveCord(self.exclusiveCords, result, allTestCords[:])
 
-    def addExclusiveCord(self, result, remainingCords):
+        for x in self.exclusiveCords:
+            print(x.graphic())
+
+    def addExclusiveCord(self, allResults, result, remainingCords):
+        myInputResult = result.clone()
+        #print("Setting inoput to:", myInputResult)
         if len(result.cordes) >= self.universe // 2:
-            return result
+            allResults.append(result)
+            #print("found ", result)
+            return True
         else:
-            while True:
-                x = next(remainingCords)
-                #print("Working on", x, len(remainingCords))
-                #print(result, result.hasRoom(x))
-                if result.hasRoom(x):
-                    return self.addExclusiveCord(
-                        result.addCorde(x), remainingCords)
+            for (current, cord) in enumerate(remainingCords):
+                #print("Working on", cord, len(remainingCords))
+                #print("My input")
+                #print(myInputResult)
+                #print(  result.hasRoom(cord))
+                #if cord.start == 2:
+                #    sys.exit(0)
+                if myInputResult.hasRoom(cord):
+                    testResult = myInputResult.clone().addCorde(cord)
+                    #if not(self.addExclusiveCord(allResults,
+                    #    result, remainingCords[current+1:][:])):
+                    #    break
+                    self.addExclusiveCord(allResults,
+                                          testResult, remainingCords[current+1:][:])
             return None
 
 
@@ -134,10 +173,13 @@ def simpletest2():
     cS.addCorde( Corde(5,1,2))
     cS.addCorde( Corde(5,4,3))
     print(cS)
-
+    print(cS.graphic())
+    
 def fillSet():
 
     cS = CordeSets(5)
+    #for c in cS.allCordes():
+    #    print(c)
     print(cS.allExclusiveSets()                  )
                       
 
@@ -145,5 +187,5 @@ def fillSet():
     
 if __name__ == '__main__':
     
-    #simpletest1()
+    #simpletest2()
     fillSet()
