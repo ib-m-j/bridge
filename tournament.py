@@ -94,38 +94,40 @@ class CordeSet:
     def clone(self):
         return CordeSet(self.universe, self.cordes[:])
     
+    
             
 class CordeSets:        
     def __init__(self, n):
         self.universe = n
-        self.allCords = []
+        self.setAllCordes()
+        self.setAllExclusiveCordeSets()
+        #self.allExclusiveSets()
 
-    def allCordes(self):
-        if self.allCords:
-            return self.allCordes
-        
-        self.allCords = []
+    def setAllCordes(self):
+        self.allCordes = []
         for start in range(0,self.universe):
             for length in range(1, self.universe - start):
-                self.allCords.append(Corde(self.universe, start, length))
+                self.allCordes.append(Corde(self.universe, start, length))
                 #print(Corde(self.universe, start, length))
+        
+        return self.allCordes
 
-        return self.allCords
-
-    def allExclusiveSets(self):
-        self.exclusiveCords = []
-        all = self.allCordes()
+    def setAllExclusiveCordeSets(self):
+        self.allExclusiveCordeSets = []
+        all = self.allCordes
         allTestCords = all[:]
         #for (start, cord) in enumerate(allTestCords):
         #    result = CordeSet(self.universe, [])
-        #    newRes = self.addExclusiveCord(self.exclusiveCords, result, allTestCords[start+1:][:])
+        #    newRes = self.addExclusiveCord(
+        #self.exclusiveCords, result, allTestCords[start+1:][:])
         
         result = CordeSet(self.universe, [])
-        newRes = self.addExclusiveCord(self.exclusiveCords, result, allTestCords[:])
+        newRes = self.addExclusiveCord(
+            self.allExclusiveCordeSets, result, allTestCords[:])
+        return self.allExclusiveCordeSets
+        
 
-        for x in self.exclusiveCords:
-            print(x.graphic())
-
+        
     def addExclusiveCord(self, allResults, result, remainingCords):
         myInputResult = result.clone()
         #print("Setting inoput to:", myInputResult)
@@ -180,8 +182,10 @@ def fillSet():
     cS = CordeSets(5)
     #for c in cS.allCordes():
     #    print(c)
-    print(cS.allExclusiveSets()                  )
-                      
+    res = cS.allExclusiveCordeSets
+    for x in res:
+        print(x.graphic())
+
 
 
     
