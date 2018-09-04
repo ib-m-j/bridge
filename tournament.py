@@ -94,6 +94,16 @@ class CordeSet:
     def clone(self):
         return CordeSet(self.universe, self.cordes[:])
     
+    def overlap(self, other):
+        overlap = 0
+        for c1 in self.cordes:
+            for c2 in other.cordes:
+                if c1 == c2:
+                    overlap++
+        return overlap
+
+    def isOrthogonal(self, other):
+        
     
             
 class CordeSets:        
@@ -102,6 +112,7 @@ class CordeSets:
         self.setAllCordes()
         self.setAllExclusiveCordeSets()
         #self.allExclusiveSets()
+
 
     def setAllCordes(self):
         self.allCordes = []
@@ -152,7 +163,7 @@ class CordeSets:
                                           testResult, remainingCords[current+1:][:])
             return None
 
-
+        
             
 def simpletest1():
     C1 = Corde(5,1,2)
@@ -183,9 +194,9 @@ def fillSet():
     #for c in cS.allCordes():
     #    print(c)
     res = cS.allExclusiveCordeSets
-    for x in res:
-        print(x.graphic())
-
+    #for x in res:
+    #    print(x.graphic())
+    print(cS.allExclusiveCordeSets[0].overlap(cSallExclusiveCordeSets[1]))
 
 
     
