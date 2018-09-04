@@ -20,7 +20,7 @@ class Corde:
 
     def __eq__(self, other):
         res = (self.universe == other.universe)
-        print(res)
+        #print(res)
         res = res and ((
             self.start == other.start and self.length == other.length) or (
                 self.start == (other.start + other.length) % self.universe) and (
@@ -99,11 +99,11 @@ class CordeSet:
         for c1 in self.cordes:
             for c2 in other.cordes:
                 if c1 == c2:
-                    overlap++
+                    overlap = overlap + 1
         return overlap
 
     def isOrthogonal(self, other):
-        
+        pass
     
             
 class CordeSets:        
@@ -190,13 +190,13 @@ def simpletest2():
     
 def fillSet():
 
-    cS = CordeSets(5)
+    cS = CordeSets(7)
     #for c in cS.allCordes():
     #    print(c)
     res = cS.allExclusiveCordeSets
-    #for x in res:
-    #    print(x.graphic())
-    print(cS.allExclusiveCordeSets[0].overlap(cSallExclusiveCordeSets[1]))
+    for x in res:
+        print(x.graphic())
+        print(cS.allExclusiveCordeSets[0].overlap(x),"\n\n")
 
 
     
