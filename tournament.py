@@ -302,11 +302,22 @@ def fillSet():
         print(c.graphic())
 
 def testAllSizes():
-    cSets = CordeSets(7)
+    cSets = CordeSets(9)
     res = cSets.allCordeSizes
-    for cS in res:
-        print(cS.graphic())
-        
+    overlaps = []
+    for cS1 in res:
+        overlapLine = []
+        overlaps.append(overlapLine)
+        print(cS1.graphic())
+        for cS2 in res:
+            overlapLine.append(cS1.maxOverlap(cS2)[0])
+    
+    for l in overlaps:
+        line = ""
+        for res in l:
+            line = line + "\t{}".format(res)
+        print(line)
+
 if __name__ == '__main__':
     
     #simpletest2()
