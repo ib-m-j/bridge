@@ -138,7 +138,14 @@ class CordeSet:
         assert 0<=r and r<self.universe, "rotate by too much"
         newCordes = [x.rotate(r) for x in self.cordes]
         return CordeSet(self.universe, newCordes)
-            
+    
+    def unMatched(self):
+        matched = []
+        for x in self:
+            matched.extend([x.normalized[0], x.normalized[1]])
+        return list(set(range(self.universe))-set(matched))
+
+        
 class CordeSets:        
     def __init__(self, n):
         self.universe = n
@@ -318,8 +325,17 @@ def testAllSizes():
             line = line + "\t{}".format(res)
         print(line)
 
+def testUnmatched():
+    cSets = CordeSets(9)
+    res = cSets.allCordeSizes
+    print(res[0].graphic())
+    for x in res[0]:
+        print(x)
+    print(res[0].unMatched())
+
 if __name__ == '__main__':
     
     #simpletest2()
     #fillSet()
-    testAllSizes()
+    #testAllSizes()
+    testUnmatched()
