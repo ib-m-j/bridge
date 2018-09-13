@@ -74,7 +74,7 @@ class GeneratedHowell(Tournament):
                 
 
     @classmethod
-    def getAllSeedPairs(n):
+    def getAllSeedPairs(self, n):
         cSets = CordeSets(n)
         res = cSets.allCordeSizes
         orthogonal = []
@@ -91,7 +91,7 @@ def testTournament():
     #    print(pair[0].graphic())
     #    print(pair[1].graphic())
     #    print("--------------------\n")
-    orthogonal = GeneratedHowell.getAllSeedPairs()
+    orthogonal = GeneratedHowell.getAllSeedPairs(7)
     T = GeneratedHowell("Noname", orthogonal[0][0], orthogonal[0][1])
     print(T)
 
