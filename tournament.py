@@ -43,7 +43,7 @@ class Tournament:
         res = res+"\n"
         return res
 
-class GeneratedHowel(Tournament):
+class GeneratedHowell(Tournament):
     def __init__(self, name, roundGenerator, dealGenerator):
         self.roundGenerator = roundGenerator
         self.dealGenerator = dealGenerator
@@ -73,21 +73,26 @@ class GeneratedHowel(Tournament):
             self.rounds.append(round)
                 
 
-def testTournament():
-    cSets = CordeSets(7)
-    res = cSets.allCordeSizes
-    orthogonal = []
-    for (n,cS1) in enumerate(res):
-        for cS2 in res[n:]:
-            if cS1.maxOverlap(cS2)[0] == 1:
-                orthogonal.append((cS1, cS2))
+    @classmethod
+    def getAllSeedPairs(n):
+        cSets = CordeSets(n)
+        res = cSets.allCordeSizes
+        orthogonal = []
+        for (n,cS1) in enumerate(res):
+            for cS2 in res[n:]:
+                if cS1.maxOverlap(cS2)[0] == 1:
+                    orthogonal.append((cS1, cS2))
+        return orthogonal
     
+
+
+def testTournament():
     #for pair in orthogonal:
     #    print(pair[0].graphic())
     #    print(pair[1].graphic())
     #    print("--------------------\n")
-
-    T = GeneratedHowel("Noname", orthogonal[0][0], orthogonal[0][1])
+    orthogonal = GeneratedHowell.getAllSeedPairs()
+    T = GeneratedHowell("Noname", orthogonal[0][0], orthogonal[0][1])
     print(T)
 
 if __name__ == '__main__':
