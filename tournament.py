@@ -1,4 +1,5 @@
 from cordes import CordeSets
+from arrayprint import ArrayPrinter
 
 class Match:
     def __init__(self, NSpair, EWpair, dealset):
@@ -22,6 +23,8 @@ class Tournament:
         #dealsets 1..d each dealset consists of  dealsPrSet deals
         self.name = name
         self.rounds = []
+        self.deals = {}
+        #deals as dictionary assumes no ghost players
         self.nPairs = 0
         self.nTables = 0
         self.nDeals = 0
@@ -76,8 +79,6 @@ class Tournament:
             res = res + line + "\n"
         return res
         
-
-
 class GeneratedHowell(Tournament):
     def __init__(self, name, nPairs, nRounds = 0, nDeals = 0):
         Tournament.__init__(self, name)
@@ -91,29 +92,37 @@ class GeneratedHowell(Tournament):
         assert nPairs == self.roundGenerator.universe + 1, "mismatch in nPairs"
 
         nDealSet = 0
-        deals = {}
+        self.deals = {}
         for cSDeal in self.dealGenerator.rotateAll():
             for corde in cSDeal:
-                deals[corde.normalized] = nDealSet
-            deals[(cSDeal.unMatched()[0], self.nPairs - 1)] = nDealSet 
+                self.deals[corde.normalized] = nDealSet
+            self.deals[(cSDeal.unMatched()[0], self.nPairs - 1)] = nDealSet 
             nDealSet = nDealSet + 1
-        for d in sorted(deals.keys()):
-            print(d, deals[d])
+        #for d in sorted(self.deals.keys()):
+        #    print(d, self.deals[d])
 
+        print(self.deals)
+        self.matchups = {}
+        
+        r = 0
         for cS in self.roundGenerator.rotateAll():
             round = []
             for corde in cS:
                 round.append(Match(
                     corde.normalized[0], corde.normalized[1], 
-                    deals[corde.normalized]))
-            print(cS.unMatched()[0], self.nPairs - 1, deals[
-                cS.unMatched()[0], self.nPairs - 1])
+                    self.deals[corde.normalized]))
+                self.matchups[corde.directed] = r
+            #print(cS.unMatched()[0], self.nPairs - 1,
+            #      self.deals[
+            #          cS.unMatched()[0], self.nPairs - 1])
             round.append(Match(
                 cS.unMatched()[0], self.nPairs - 1,
-                deals[(cS.unMatched()[0], self.nPairs - 1)]))
-
-            self.rounds.append(round)
+                self.deals[(cS.unMatched()[0], self.nPairs - 1)]))
+            self.matchups[(cS.unMatched()[0], self.nPairs - 1)]=r
                 
+            self.rounds.append(round)
+            r = r+1
+            
 
     @classmethod
     def getAllHowellSeeds(self, n):
@@ -134,8 +143,12 @@ def testTournament():
     #    print(pair[1].graphic())
     #    print("--------------------\n")
     T = GeneratedHowell("Noname", 12)
-    print(T.__matrix__())
-
+    #print(T.__matrix__())
+    print(ArrayPrinter(T.deals).print())
+    #print(T.rounds)
+    
+    print(ArrayPrinter(T.matchups, width = 12, height = 12).print())
+    
 if __name__ == '__main__':
     testTournament()
     #added comment

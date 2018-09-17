@@ -17,7 +17,8 @@ class Corde:
         else:
             self.normalized = (self.start, self.start + self.length)
         #print("corde")
-
+        self.directed = (self.start, (self.start + self.length) % self.universe)
+        
     def __eq__(self, other):
         res = (self.universe == other.universe)
         #print(res)
