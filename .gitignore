@@ -5,6 +5,8 @@ ehthumbs.db
 TAGS
 .gitignore
 etags.bat
+*.py#
+.#*
 # python backups
 *~
 data/*.html

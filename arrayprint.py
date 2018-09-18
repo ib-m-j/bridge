@@ -2,11 +2,11 @@ class ArrayPrinter:
     def __init__(self, array, width = 0, height = 0, borders = True):
         self.array = array
         if width == 0:
-            self.width = max([k[1] for k in array.keys()])
+            self.width = max([k[1] for k in array.keys()]) + 1
         else:
             self.width = width
         if height == 0:
-            self.height = max([k[0] for k in array.keys()])
+            self.height = max([k[0] for k in array.keys()]) + 1
         else:
             self.height = height
         self.borders = borders
@@ -20,12 +20,12 @@ class ArrayPrinter:
             res = res + starter + ''.join('{:3}'.format(x) for x in range(self.width))
             res = res + '\n' + ''.join(
                 '{:3}'.format(3*'-') for x in range(self.width + 1))
-        for i in range(self.height + 1):
+        for i in range(self.height):
             if self.borders:
                 res = res + '\n' + '{:2}|'.format(i)
             else:
                 res = ress + '\n'
-            for j in range(self.width + 1):
+            for j in range(self.width):
                 if (i,j) in self.array:
                     res = res + '{:3}'.format(self.array[(i,j)])
                 else:
@@ -45,5 +45,7 @@ if __name__ == '__main__':
     for a in range(4):
         for b in range(3):
             array[(a,b)] = a*b
-
-    print(ArrayPrinter(array, width = 12, height = 12).print())
+    theArray = ArrayPrinter(array)
+    print(theArray.print())
+    print(theArray.width)
+    print(array)

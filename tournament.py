@@ -15,6 +15,12 @@ class Match:
         return "NS: {}, EW: {}, Dealset: {}".format(
             self.NSpair, self.EWpair, self.dealset)
 
+    def getNS(self):
+        return self.NSpair
+    
+    def getEW(self):
+        return self.EWpair
+    
 class Tournament:
     def __init__(self, name = "Noname"):
         #pairs 1..p
@@ -101,24 +107,26 @@ class GeneratedHowell(Tournament):
         #for d in sorted(self.deals.keys()):
         #    print(d, self.deals[d])
 
-        print(self.deals)
+        #print(self.deals)
         self.matchups = {}
         
         r = 0
         for cS in self.roundGenerator.rotateAll():
             round = []
             for corde in cS:
-                round.append(Match(
-                    corde.normalized[0], corde.normalized[1], 
-                    self.deals[corde.normalized]))
-                self.matchups[corde.directed] = r
+                thisMatch = Match(
+                    corde.directed[0], corde.directed[1], 
+                    self.deals[corde.normalized])
+                round.append(thisMatch)
+                self.matchups[r, thisMatch.getNS()] = thisMatch.getEW()
             #print(cS.unMatched()[0], self.nPairs - 1,
             #      self.deals[
             #          cS.unMatched()[0], self.nPairs - 1])
-            round.append(Match(
-                cS.unMatched()[0], self.nPairs - 1,
-                self.deals[(cS.unMatched()[0], self.nPairs - 1)]))
-            self.matchups[(cS.unMatched()[0], self.nPairs - 1)]=r
+            thisMatch = Match(
+                self.nPairs - 1, cS.unMatched()[0], 
+                self.deals[(cS.unMatched()[0], self.nPairs - 1)])
+            round.append(thisMatch)
+            self.matchups[r, thisMatch.getNS()] = thisMatch.getEW()
                 
             self.rounds.append(round)
             r = r+1
@@ -144,10 +152,10 @@ def testTournament():
     #    print("--------------------\n")
     T = GeneratedHowell("Noname", 12)
     #print(T.__matrix__())
-    print(ArrayPrinter(T.deals).print())
+    print(ArrayPrinter(T.deals).print("pairId, dealid"))
     #print(T.rounds)
     
-    print(ArrayPrinter(T.matchups, width = 12, height = 12).print())
+    print(ArrayPrinter(T.matchups).print("round no, NS plaers -> opponentId"))
     
 if __name__ == '__main__':
     testTournament()
