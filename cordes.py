@@ -1,19 +1,25 @@
 import sys
+import itertools
 
 class Corde:
     def __init__(self, n, start, length):
+        #this handles identification directeedcordes
         #n number of points around circle numbered counterclock wise
         #start number of one end of corde n in 0..n-1
         #length number of spaces skipped to the left of the corde 1..n-1
-        #i.e. end point is start + length mod n
+        #start point is start and end point is start + length mod n
         self.universe = n
         self.start = start
         self.length = length
-        assert(start >= 0 and start < n), "corde start value {} illegal".format(start)
-        assert(length>=1 and length < n), "corde length value {} illegal".format(length)
+        assert(start >= 0 and start < n), \
+        "corde start value {} illegal".format(start)
+        assert(length>=1 and length < n), \
+        "corde length value {} illegal".format(length)
         #normalized not good for directed cordes
+        #normalized numbers the two end points
         if self.start + self.length >= self.universe:
-            self.normalized = ((self.start+self.length) % self.universe, self.start)
+            self.normalized = (
+                (self.start+self.length) % self.universe, self.start)
         else:
             self.normalized = (self.start, self.start + self.length)
         #print("corde")
@@ -58,12 +64,47 @@ class Corde:
                    other.start + other.length) % self.universe )
         return res
 
+    def getFlipped(self):
+        return Corde(
+            self.universe, self.start + self.length, 
+            self.universe - self.length) 
+
+    def flip(self):
+        self.start = self.start + self.length
+        self.length = self.universe - self.length
+        return self
+
+    def setDirection(self, dir):
+        #dir = 0 first point around the clock is starting point
+        #dir = 1 first point around the clock is ending point
+        if self.start + self.length >= self.universe:
+            if dir == 0:
+                self.start = (self.start+self.length) % self.universe
+                self.length = self.universe -  self.length
+        else:
+            if dir == 1:
+                self.start = (self.start+self.length) % self.universe
+                self.length = self.universe -  self.length
+        
+    def getDirection(self):
+        #see definition of direction in setDirection
+        if self.start+ self.length >= self.universe:
+            return 1
+        return 0
+
+    def getStartPoint(self):
+        return self.start
+
+    def getEndPoint(self):
+        return (self.start + self.length) % self.universe
+
 class DirectedCorde(Corde):
-    
+    #not used yet maybe never relevant
     def __eq__(self,  other):
         res = (self.universe == other.universe)
         print(res)
-        res = res and (self.start == other.start and self.length == other.length) 
+        res = res and (
+            self.start == other.start and self.length == other.length) 
         return res
 
 class CordeSet:
@@ -77,6 +118,32 @@ class CordeSet:
             res = res + "\tcorde: {}\n ".format(c)
         return res
     
+    def showCordeDirs(self):
+        res =  "Cordeset: Size {}\n".format(self.universe)
+        for x in range(self.universe):
+            res = res + "{:3d}".format(x)
+        res = res + "\n"
+
+        starters = {}
+        enders = {}
+        for n,c in enumerate(self.cordes):
+            starters[c.start] = n
+            enders[(c.start + c.length)%c.universe] = n
+
+        for x in range(self.universe):
+            if x in starters:
+                res = res + "{:3d}".format(starters[x])
+            else:
+                res = res + "{:3}".format('')
+        res = res + '\n'
+        for x in range(self.universe):
+            if x in enders:
+                res = res + "{:3d}".format(enders[x])
+            else:
+                res = res + "{:3}".format('')
+
+        return res
+        
     def __iter__(self):
         for x in self.cordes:
             yield x
@@ -146,6 +213,13 @@ class CordeSet:
             matched.extend([x.normalized[0], x.normalized[1]])
         return list(set(range(self.universe))-set(matched))
 
+    def showAllDirections(self):
+        for selection in itertools.product(
+                [0,1], repeat=len(self.cordes)):
+            print("\n", selection)
+            for (dir, c) in zip(selection, self.cordes):
+                c.setDirection(dir)
+            print(self.showCordeDirs())
         
 class CordeSets:        
     def __init__(self, n):
@@ -183,17 +257,20 @@ class CordeSets:
             #print(myRes.graphic())
             if myRes.hasRoom(tester):
                 if length == maxLength:
-                    self.allCordeSizes.append(myRes.clone().addCorde(tester).clone())
+                    self.allCordeSizes.append(
+                        myRes.clone().addCorde(tester).clone())
                     #print("found result\n")
                 else:
-                    self.addNewSizeCorde(myRes.clone().addCorde(tester).clone(), length + 1, maxLength)
+                    self.addNewSizeCorde(
+                        myRes.clone().addCorde(
+                            tester).clone(), length + 1, maxLength)
             
                        
     
     def setAllExclusiveCordeSets(self):
         #standardised first corde is always 0.1
         self.allExclusiveCordeSets = []
-        all = self.allCordes
+        #all = self.allCordes
 
         #allTestCords = all[:]
         #for (start, cord) in enumerate(allTestCords):
@@ -239,8 +316,8 @@ class CordeSets:
                     #if not(self.addExclusiveCord(allResults,
                     #    result, remainingCords[current+1:][:])):
                     #    break
-                    self.addExclusiveCord(allResults,
-                                          testResult, remainingCords[current+1:][:])
+                    self.addExclusiveCord(
+                        allResults, testResult, remainingCords[current+1:][:])
             return None
 
     def allOrthogonal(self, selectedSet):
@@ -250,6 +327,16 @@ class CordeSets:
                 yield cSet 
         
 
+    def getAllOrthogonalPairs(self, n):
+        cSets = CordeSets(n)
+        res = cSets.allCordeSizes
+        orthogonal = []
+        for (n,cS1) in enumerate(res):
+            for cS2 in res[n:]:
+                if cS1.maxOverlap(cS2)[0] == 1:
+                    orthogonal.append((cS1, cS2))
+        return orthogonal
+    
         
             
 def simpletest1():
@@ -334,9 +421,34 @@ def testUnmatched():
         print(x)
     print(res[0].unMatched())
 
+def testFlip():
+    cSs = CordeSets(7)
+    res = cSs.allCordeSizes
+    for cordeSet in res[:1]:
+        print(cordeSet.graphic())
+        for corde in cordeSet:
+            corde.flip()
+        print(cordeSet.showCordeDirs())
+
+    for corde in cordeSet:
+        corde.setDirection(0)
+
+    print(cordeSet.showCordeDirs())
+
+    for corde in cordeSet:
+        corde.setDirection(1)
+
+    print(cordeSet.showCordeDirs())
+
+    print("starting all dirs")
+    cordeSet.showAllDirections()
+    
+    
+
 if __name__ == '__main__':
     
     #simpletest2()
     #fillSet()
     #testAllSizes()
-    testUnmatched()
+    #testUnmatched()
+    testFlip()
