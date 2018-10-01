@@ -1,5 +1,6 @@
-from cordes import CordeSets
+from cordes import CordeSets, profile
 from arrayprint import ArrayPrinter
+import numpy as np
 
 class Match:
     def __init__(self, NSpair, EWpair, dealset):
@@ -87,23 +88,23 @@ class Tournament:
                     line = line + "{:3}".format("")
             res = res + line + "\n"
         return res
+
         
+    
+    
 class GeneratedHowell(Tournament):
-    def __init__(self, seedNo, name, nPairs, nRounds = 0, nDeals = 0):
+    def __init__(self, name, roundGenerator, dealGenerator):
         Tournament.__init__(self, name)
-        seeds = self.getAllHowellSeeds(nPairs - 1)
-        print("NoodfSeeds: ", len(seeds))
-        self.roundGenerator = seeds[seedNo][0]
-        self.dealGenerator = seeds[seedNo][1]
-        print("round generator")
-        print(self.dealGenerator.graphic())
-        print("deal generator")
-        print(self.roundGenerator.graphic())
-        self.nPairs = nPairs
+        self.roundGenerator = roundGenerator
+        self.dealGenerator = dealGenerator
+        #print("round generator")
+        #print(self.dealGenerator.graphic())
+        #print("deal generator")
+        #print(self.roundGenerator.graphic())
+        self.nPairs = self.roundGenerator.universe + 1
         self.nTables = self.nPairs/2
-        self.nDeals = nPairs - 1
-        self.nRounds = nPairs - 1
-        assert nPairs == self.roundGenerator.universe + 1, "mismatch in nPairs"
+        self.nDeals = self.nPairs - 1
+        self.nRounds = self.nPairs - 1
 
         nDealSet = 0
         self.deals = {}
@@ -130,6 +131,7 @@ class GeneratedHowell(Tournament):
             #print(cS.unMatched()[0], self.nPairs - 1,
             #      self.deals[
             #          cS.unMatched()[0], self.nPairs - 1])
+            #below setting aelf.nPairs-1 NS
             thisMatch = Match(
                 self.nPairs - 1, cS.unMatched()[0], 
                 self.deals[(cS.unMatched()[0], self.nPairs - 1)])
@@ -181,8 +183,8 @@ class GeneratedHowell(Tournament):
         return comparisons
                     
     @classmethod
-    def getAllHowellSeeds(self, n):
-        cSets = CordeSets(n)
+    def getAllHowellSeeds(self, nPairs):
+        cSets = CordeSets(nPairs-1)
         res = cSets.allCordeSizes
         orthogonal = []
         for (n,cS1) in enumerate(res):
@@ -198,13 +200,28 @@ def testTournament():
     #    print(pair[0].graphic())
     #    print(pair[1].graphic())
     #    print("--------------------\n")
-    print("\n\nStarting seednO ", 25)
-    T = GeneratedHowell(25, "Noname", 12)
+    allSeeds = GeneratedHowell.getAllHowellSeeds(8)
+    print(len(allSeeds))
+
+    #allseeds 12 and seedno 25 works nicely
+    baseRoundsGenerator = allSeeds[0][0]
+    print(allSeeds[0][1].graphic())
+    for rG in baseRoundsGenerator.setAllDirections():
+        T = GeneratedHowell("Noname", rG, allSeeds[0][1])
+        NSs = []
+        for match in T.rounds[0]:
+            NSs.append(match.getNS())
+        print(NSs)        
+        NSset = set([c.directed[0] for c in rG]) 
+        comparisons = T.getComparisons()
+        if np.var(list(comparisons.values())) == 0:
+            profile(rG.universe, NSset)
+            print("\n\n",rG.showCordeDirs())
+            print(ArrayPrinter(comparisons).print("comparisons"))
     #print(T.__matrix__())
     #print(ArrayPrinter(T.deals).print("pairId, dealid"))
     #print(ArrayPrinter(T.matchups).print("round no, NS plaers -> opponentId"))
 
-    print(ArrayPrinter(T.getComparisons()).print("comparisons"))
     
 if __name__ == '__main__':
     testTournament()

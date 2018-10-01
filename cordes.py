@@ -1,6 +1,7 @@
 import sys
 import itertools
 
+
 class Corde:
     def __init__(self, n, start, length):
         #this handles identification directeedcordes
@@ -213,13 +214,14 @@ class CordeSet:
             matched.extend([x.normalized[0], x.normalized[1]])
         return list(set(range(self.universe))-set(matched))
 
-    def showAllDirections(self):
+    def setAllDirections(self):
         for selection in itertools.product(
                 [0,1], repeat=len(self.cordes)):
-            print("\n", selection)
+            #print("\n", selection)
             for (dir, c) in zip(selection, self.cordes):
                 c.setDirection(dir)
-            print(self.showCordeDirs())
+            #print(self.showCordeDirs())
+            yield self
         
 class CordeSets:        
     def __init__(self, n):
@@ -441,14 +443,54 @@ def testFlip():
     print(cordeSet.showCordeDirs())
 
     print("starting all dirs")
-    cordeSet.showAllDirections()
+    cordeSet.setAllDirections()
     
     
+def testAllDirections():
+    cSs = CordeSets(7)
+    res = cSs.allCordeSizes
+    for cS in res[:1]:
+        print(cS.graphic())
+        for x in cS.setAllDirections():
+            print(x.showCordeDirs())
 
+
+def profile(universe, startSet):
+    #for a set of numbers in 0..universe-1
+    #look at all cordelengths and check number of
+    #cordes that span from the set to the complementary set
+    #and cordes that do not
+    #if the profile is very flat we have a candidate for
+    #a Howell round generator that will give a balanced tournament
+    profile = []
+    compSet = set([x for x in range(universe)])-startSet
+    for length in range(1,universe):
+        start = Corde(universe, 0, length)
+        span = 0
+        noSpan = 0
+        for x in range(universe):
+            tester = start.rotate(x)
+            if (
+                (tester.normalized[0] in startSet and
+                 tester.normalized[1] in startSet) or
+                (tester.normalized[0] in compSet and
+                 tester.normalized[1] in compSet)):
+                noSpan += 1
+            else:
+                span +=1
+                
+        profile.append((noSpan, span))
+    print(startSet)
+    print(compSet)
+    print(profile)
+            
+            
 if __name__ == '__main__':
     
     #simpletest2()
     #fillSet()
     #testAllSizes()
     #testUnmatched()
-    testFlip()
+    #testFlip()
+    #testAllDirections()
+    profile(7, set([1,2,4]))
