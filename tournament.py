@@ -111,8 +111,8 @@ class GeneratedHowell(Tournament):
         self.deals = {}
         for cSDeal in self.dealGenerator.rotateAll():
             for corde in cSDeal:
-                self.deals[corde.normalized] = nDealSet
-            self.deals[(cSDeal.unMatched()[0], self.nPairs - 1)] = nDealSet
+                self.deals[corde.normalized] = (nDealSet, corde.getDirection())
+            self.deals[(cSDeal.unMatched()[0], self.nPairs - 1)] = (nDealSet, 1)
             
             nDealSet = nDealSet + 1
         #for d in sorted(self.deals.keys()):
@@ -126,9 +126,16 @@ class GeneratedHowell(Tournament):
             #print(self.roundGenerator.showCordeDirs())
             round = []
             for corde in cS:
-                thisMatch = Match(
-                    corde.directed[0], corde.directed[1], 
-                    self.deals[corde.normalized])
+                (dealNo, direction) = self.deals[corde.normalized]
+                if direction == 0:
+                    north = corde.directed[0]
+                    south = corde.directed[1]
+                else:
+                    south = corde.directed[0]
+                    north = corde.directed[1]
+                    
+                thisMatch = Match(north, south, dealNo)
+
                 round.append(thisMatch)
                 self.matchups[r, thisMatch.getNS()] = thisMatch.getEW()
 
@@ -216,25 +223,27 @@ def testTournament():
     print(len(allSeeds))
 
     #allseeds 12 and seedno 25 works nicely
-    print("Deal generator:\n{}\n".format(allSeeds[0][1].showCordeDirs()))
+    baseDealsGenerator = allSeeds[0][1]
+    print("Deal generator:\n{}\n".format(baseDealsGenerator.showCordeDirs()))
           
     baseRoundsGenerator = allSeeds[0][0]
     print("Base round generator:\n{}\n".format(
         baseRoundsGenerator.showCordeDirs()))
     #print(allSeeds[0][1].showCordeDirs(),"\n")
 
-    for rG in baseRoundsGenerator.setAllDirections():
-        print("Round Genrator1:\n{}\n".format(rG.showCordeDirs()))
-        T = GeneratedHowell("Noname", rG, allSeeds[0][1])
+    for dG in baseDealsGenerator.setAllDirections():
+        print("Deal Genrator1:\n{}\n".format(dG.showCordeDirs()))
+        T = GeneratedHowell("Noname", baseRoundsGenerator,
+                            dG)
         print("NS set in round 0\n{}".format(T.getNSSet(0)))
         #for match in T.rounds[0]:
         #    NSs.append(match.getNS())
         #print(NSs)
 
-        NSset = set([c.directed[0] for c in rG])
+        NSset = set([c.directed[0] for c in dG])
         #print("NS set in round generator\n{}".format(NSset))
         comparisons = T.getComparisons()
-        (prVar, profileVal) = profile(rG.universe, NSset)
+        (prVar, profileVal) = profile(dG.universe, NSset)
         if (np.var(list(comparisons.values())) == 0) or (prVar == 0):
             #print("\n\n",rG.showCordeDirs())
             print(ArrayPrinter(comparisons).print("comparisons"))
