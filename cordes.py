@@ -1,6 +1,6 @@
 import sys
 import itertools
-
+import numpy as np
 
 class Corde:
     def __init__(self, n, start, length):
@@ -86,7 +86,9 @@ class Corde:
             if dir == 1:
                 self.start = (self.start+self.length) % self.universe
                 self.length = self.universe -  self.length
-        
+
+        self.directed = (self.start, (self.start + self.length) % self.universe)
+                
     def getDirection(self):
         #see definition of direction in setDirection
         if self.start+ self.length >= self.universe:
@@ -480,10 +482,11 @@ def profile(universe, startSet):
                 span +=1
                 
         profile.append((noSpan, span))
-    print(startSet)
-    print(compSet)
-    print(profile)
-            
+    #print(startSet)
+    #print(compSet)
+    #print(profile)
+    profileVar = [x for (x,y) in profile]
+    return (np.var(profileVar), profile)
             
 if __name__ == '__main__':
     
@@ -493,4 +496,5 @@ if __name__ == '__main__':
     #testUnmatched()
     #testFlip()
     #testAllDirections()
-    profile(7, set([1,2,4]))
+    res = profile(7, set([1,2,3]))
+    print(res)
