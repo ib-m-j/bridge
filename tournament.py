@@ -90,8 +90,14 @@ class Tournament:
             res = res + line + "\n"
         return res
 
-        
-    
+    def simpleView(self):
+        for r in self.rounds:
+            print('a\n')
+            line = ""
+            for m in r:
+                line = line + "{} {}:{} -- ".format(
+                    m.getNS(), m.getEW(), m.getDealset())
+            print(line)
     
 class GeneratedHowell(Tournament):
     def __init__(self, name, roundGenerator, dealGenerator):
@@ -128,11 +134,11 @@ class GeneratedHowell(Tournament):
             for corde in cS:
                 (dealNo, direction) = self.deals[corde.normalized]
                 if direction == 0:
-                    north = corde.directed[0]
-                    south = corde.directed[1]
+                    north = corde.normalized[0]
+                    south = corde.normalized[1]
                 else:
-                    south = corde.directed[0]
-                    north = corde.directed[1]
+                    north = corde.normalized[1]
+                    south = corde.normalized[0]
                     
                 thisMatch = Match(north, south, dealNo)
 
@@ -143,10 +149,10 @@ class GeneratedHowell(Tournament):
             #      self.deals[
             #          cS.unMatched()[0], self.nPairs - 1])
             #below setting aelf.nPairs-1 NS
-            
+            #don't need to switch directions as we know details in this case
             thisMatch = Match(
                 self.nPairs - 1, cS.unMatched()[0], 
-                self.deals[(cS.unMatched()[0], self.nPairs - 1)])
+                self.deals[(cS.unMatched()[0], self.nPairs - 1)][0])
             round.append(thisMatch)
             self.matchups[r, thisMatch.getNS()] = thisMatch.getEW()
 
@@ -248,7 +254,9 @@ def testTournament():
             #print("\n\n",rG.showCordeDirs())
             print(ArrayPrinter(comparisons).print("comparisons"))
             print(profileVal)
-    #print(T.__matrix__())
+            print(T.simpleView())
+            print("aaaa")
+    #print(T.simpleView())
     #print(ArrayPrinter(T.deals).print("pairId, dealid"))
     #print(ArrayPrinter(T.matchups).print("round no, NS plaers -> opponentId"))
 
