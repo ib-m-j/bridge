@@ -16,8 +16,7 @@ class Corde:
         "corde start value {} illegal".format(start)
         assert(length>=1 and length < n), \
         "corde length value {} illegal".format(length)
-        #normalized not good for directed cordes
-        #normalized numbers the two end points
+        #normalized numbers the two end points. normalized[0] < normalized[1]
         if self.start + self.length >= self.universe:
             self.normalized = (
                 (self.start+self.length) % self.universe, self.start)
@@ -229,8 +228,11 @@ class CordeSets:
     def __init__(self, n):
         self.universe = n
         self.setAllCordes()
+        print("allcordes")
         self.setAllExclusiveCordeSets()
+        print("allexcl")
         self.setAllCordeSizes()
+        print("allsizes")
         #only undirected
         #self.allExclusiveSets()
 
