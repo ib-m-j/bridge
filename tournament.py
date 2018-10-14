@@ -34,11 +34,15 @@ class Tournament:
         #dealsets 1..d each dealset consists of  dealsPrSet deals
         self.name = name
         self.rounds = []
+        
+        #the deals should be calculated from other input
+        #so line below should not be needed
         self.deals = {}
         #deals as dictionary assumes no ghost players
+        
         self.nPairs = 0
         self.nTables = 0
-        self.nDeals = 0
+        self.nDeals = 0 #per dealset
         self.nRounds = 0
         
     def __str__(self):
@@ -92,13 +96,56 @@ class Tournament:
 
     def simpleView(self):
         for r in self.rounds:
-            print('a\n')
             line = ""
             for m in r:
                 line = line + "{} {}:{} -- ".format(
                     m.getNS(), m.getEW(), m.getDealset())
             print(line)
-    
+
+
+    def getComparisons(self):
+        deals = {}
+        for round in self.rounds:
+            for match in round:
+                if match.getDealset() in deals:
+                    deals[match.getDealset()].append(
+                        (match.getNS(), match.getEW()))
+                else:
+                    deals[match.getDealset()] =  [
+                        (match.getNS(), match.getEW())]
+                    
+        print(deals)
+        comparisons = {}
+        for r in range(self.nPairs):
+            for c in range(self.nPairs):
+                if r != c:
+                    comparisons[(r,c)] = 0
+        #print(deals)
+        for d, encounters in deals.items():
+            #print(encounters)
+            for n, encounter in enumerate(encounters):
+                #print(n, encounter)
+                ns = encounter[0]
+                ew = encounter[1]
+                comparisons[(ns, ew)] = comparisons[(ns,ew)] + self.nPairs - 1
+                comparisons[(ew, ns)] = comparisons[(ew,ns)] + self.nPairs - 1
+                for eOther in encounters[n+1:]:
+                    otherNS = eOther[0]
+                    otherEW = eOther[1]
+
+                    comparisons[(ns, otherNS)] = comparisons[(ns, otherNS)] + 1
+                    comparisons[(ns, otherEW)] = comparisons[(ns, otherEW)] - 1
+                    comparisons[(ew, otherNS)] = comparisons[(ew, otherNS)] - 1
+                    comparisons[(ew, otherEW)] = comparisons[(ew, otherEW)] + 1
+                
+                    comparisons[(otherNS, ns)] = comparisons[(otherNS, ns)] + 1
+                    comparisons[(otherEW, ns)] = comparisons[(otherEW, ns)] - 1
+                    comparisons[(otherNS, ew)] = comparisons[(otherNS, ew)] - 1
+                    comparisons[(otherEW, ew)] = comparisons[(otherEW, ew)] + 1
+        return comparisons
+                    
+            
+            
 class GeneratedHowell(Tournament):
     def __init__(self, name, roundGenerator, dealGenerator):
         Tournament.__init__(self, name)
@@ -167,52 +214,14 @@ class GeneratedHowell(Tournament):
 
         return res
     
-    def getComparisons(self):
-        deals = {}
-        for round in self.rounds:
-            for match in round:
-                if match.getDealset() in deals:
-                    deals[match.getDealset()].append(
-                        (match.getNS(), match.getEW()))
-                else:
-                    deals[match.getDealset()] =  [
-                        (match.getNS(), match.getEW())]
-                    
-
-        comparisons = {}
-        for r in range(self.nPairs):
-            for c in range(self.nPairs):
-                if r != c:
-                    comparisons[(r,c)] = 0
-        #print(deals)
-        for d, encounters in deals.items():
-            #print(encounters)
-            for n, encounter in enumerate(encounters):
-                #print(n, encounter)
-                ns = encounter[0]
-                ew = encounter[1]
-                comparisons[(ns, ew)] = comparisons[(ns,ew)] + self.nPairs - 1
-                comparisons[(ew, ns)] = comparisons[(ew,ns)] + self.nPairs - 1
-                for eOther in encounters[n+1:]:
-                    otherNS = eOther[0]
-                    otherEW = eOther[1]
-                    comparisons[(ns, otherNS)] = comparisons[(ns, otherNS)] + 1
-                    comparisons[(ns, otherEW)] = comparisons[(ns, otherEW)] - 1
-                    comparisons[(ew, otherNS)] = comparisons[(ew, otherNS)] - 1
-                    comparisons[(ew, otherEW)] = comparisons[(ew, otherEW)] + 1
-                
-                    comparisons[(otherNS, ns)] = comparisons[(otherNS, ns)] + 1
-                    comparisons[(otherEW, ns)] = comparisons[(otherEW, ns)] - 1
-                    comparisons[(otherNS, ew)] = comparisons[(otherNS, ew)] - 1
-                    comparisons[(otherEW, ew)] = comparisons[(otherEW, ew)] + 1
-        return comparisons
-                    
     @classmethod
     def getAllHowellSeeds(self, nPairs):
         cSets = CordeSets(nPairs-1)
         res = cSets.allCordeSizes
         orthogonal = []
+        all = len(res)
         for (n,cS1) in enumerate(res):
+            print("creating orthogonal", n, all)
             for cS2 in res[n:]:
                 if cS1.maxOverlap(cS2)[0] == 1:
                     orthogonal.append((cS1, cS2))
@@ -225,6 +234,7 @@ def testTournament():
     #    print(pair[0].graphic())
     #    print(pair[1].graphic())
     #    print("--------------------\n")
+    #setting 16 below takes for ever and finds one balanced tournament
     allSeeds = GeneratedHowell.getAllHowellSeeds(8)
     print(len(allSeeds))
 
@@ -241,7 +251,7 @@ def testTournament():
         print("Deal Genrator1:\n{}\n".format(dG.showCordeDirs()))
         T = GeneratedHowell("Noname", baseRoundsGenerator,
                             dG)
-        print("NS set in round 0\n{}".format(T.getNSSet(0)))
+        #print("NS set in round 0\n{}".format(T.getNSSet(0)))
         #for match in T.rounds[0]:
         #    NSs.append(match.getNS())
         #print(NSs)
@@ -254,8 +264,7 @@ def testTournament():
             #print("\n\n",rG.showCordeDirs())
             print(ArrayPrinter(comparisons).print("comparisons"))
             print(profileVal)
-            print(T.simpleView())
-            print("aaaa")
+            #print(T.simpleView())
     #print(T.simpleView())
     #print(ArrayPrinter(T.deals).print("pairId, dealid"))
     #print(ArrayPrinter(T.matchups).print("round no, NS plaers -> opponentId"))
