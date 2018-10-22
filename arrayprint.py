@@ -1,12 +1,33 @@
+class DictArray:
+    def __init__(self, dict):
+        self.dict = dict
+
+
+    def __add__(self, other):
+        resDict = self.dict.copy()
+        for key in other.dict.keys():
+            if key in resDict:
+                resDict[key] = resDict[key]+other.dict[key]
+            else:
+                resDict[key] = other.dict[key]
+        
+        return DictArray(resDict)
+
 class ArrayPrinter:
     def __init__(self, array, width = 0, height = 0, borders = True):
-        self.array = array
+        if isinstance(array, dict):
+            print("found dict")
+            self.array = array
+        elif isinstance(array, DictArray):
+            print("found dict")
+            self.array = array.dict
+            
         if width == 0:
-            self.width = max([k[1] for k in array.keys()]) + 1
+            self.width = max([k[1] for k in self.array.keys()]) + 1
         else:
             self.width = width
         if height == 0:
-            self.height = max([k[0] for k in array.keys()]) + 1
+            self.height = max([k[0] for k in self.array.keys()]) + 1
         else:
             self.height = height
         self.borders = borders
@@ -17,7 +38,8 @@ class ArrayPrinter:
         starter = ''
         if self.borders:
             starter = '{:3}'.format('')
-            res = res + starter + ''.join('{:3}'.format(x) for x in range(self.width))
+            res = res + starter + ''.join(
+                '{:3}'.format(x) for x in range(self.width))
             res = res + '\n' + ''.join(
                 '{:3}'.format(3*'-') for x in range(self.width + 1))
         for i in range(self.height):

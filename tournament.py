@@ -114,7 +114,7 @@ class Tournament:
                     deals[match.getDealset()] =  [
                         (match.getNS(), match.getEW())]
                     
-        print(deals)
+        #print(deals)
         comparisons = {}
         for r in range(self.nPairs):
             for c in range(self.nPairs):
