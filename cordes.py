@@ -1,6 +1,7 @@
 import sys
 import itertools
 import numpy as np
+import arrayprint
 
 class Corde:
     def __init__(self, n, start, length):
@@ -223,16 +224,30 @@ class CordeSet:
                 c.setDirection(dir)
             #print(self.showCordeDirs())
             yield self
-        
+
+    def getAllEndPoints(self):
+        res = []
+        for c in self:
+            res.append(c.getEndPoint())
+
+        return res
+
+    def getAllStartPoints(self):
+        res = []
+        for c in self:
+            res.append(c.getStartPoint())
+
+        return res
+    
 class CordeSets:        
     def __init__(self, n):
         self.universe = n
         self.setAllCordes()
-        print("allcordes")
+        #print("allcordes")
         self.setAllExclusiveCordeSets()
-        print("allexcl")
+        #print("allexcl")
         self.setAllCordeSizes()
-        print("allsizes")
+        #print("allsizes")
         #only undirected
         #self.allExclusiveSets()
 
@@ -466,6 +481,7 @@ def profile(universe, startSet):
     #and cordes that do not
     #if the profile is very flat we have a candidate for
     #a Howell round generator that will give a balanced tournament
+    #first value for each cordelength is number of NoSpanning cordes
     profile = []
     compSet = set([x for x in range(universe)])-startSet
     for length in range(1,universe):
@@ -489,7 +505,81 @@ def profile(universe, startSet):
     #print(profile)
     profileVar = [x for (x,y) in profile]
     return (np.var(profileVar), profile)
+
+def allSizesNine():
+    cSets = CordeSets(9)
+    allLines = cSets.allCordeSizes
+
+    count = 0
+    for line in allLines:
+        print('\nLine no: {}\n{}'.format(
+            count, line.graphic()))
+        count +=1
+
+
+    overlaps = []
+    for cS1 in allLines:
+        overlapLine = []
+        overlaps.append(overlapLine)
+        for cS2 in allLines:
+            overlapLine.append(cS1.maxOverlap(cS2)[0])
+
+    print(arrayprint.ArrayPrinter.arrayPrinterFromLists(overlaps).print(
+        "Overlaps between lines:\n"))
             
+
+    print("\nOrthogonal line pairs:\n")
+    orthogonals = []
+    for rowNo in range(len(overlaps)):
+        for colNo in range(rowNo, len(overlaps[rowNo])):
+            if overlaps[rowNo][colNo] == 1:
+                orthogonals.append((rowNo, colNo))
+
+    res = ""
+    for x in orthogonals:
+        res = res + "({},{}) ".format(x[0], x[1])
+    print(res)
+
+
+    print("\nProfiles for one line no {}:\n".format(orthogonals[0][1]))
+    tester = allLines[orthogonals[0][1]]
+    cordeLengthOneSameSmall = []
+    cordeLengthOneSameLarge = []
+    for testerWithDir in tester.setAllDirections():
+        #print(testerWithDir.showCordeDirs())
+        #print(testerWithDir.getAllEndPoints())
+        endPoints = testerWithDir.getAllEndPoints()
+        theProfile = profile(tester.universe, set(endPoints))[1]
+        if theProfile[0][0] == 3:
+            cordeLengthOneSameSmall.append(
+                (set(endPoints), [x for (x,y) in theProfile]))
+        if theProfile[0][0] == 5:
+            cordeLengthOneSameLarge.append(
+                (set(endPoints), [x for (x,y) in theProfile]))
+
+    print("\nAll small length one profile:\n")
+    for x in cordeLengthOneSameSmall:
+        print(x)
+        
+    print("\nAll large length one profile:\n")
+    for x in cordeLengthOneSameLarge:
+        print(x)
+        
+
+    print("Balanced pairs\n")
+    balanced = []
+    for seta, a in cordeLengthOneSameSmall:
+        for setb, b in cordeLengthOneSameLarge:
+            res = True
+            for x,y in zip(a,b):
+                if x + y != 8:
+                    res = None
+                    break
+            if res:
+                print(seta, setb)
+                print(a,b)
+                
+        
 if __name__ == '__main__':
     
     #simpletest2()
@@ -498,5 +588,6 @@ if __name__ == '__main__':
     #testUnmatched()
     #testFlip()
     #testAllDirections()
-    res = profile(7, set([1,2,3]))
-    print(res)
+    #res = profile(7, set([1,2,3]))
+    #print(res)
+    allSizesNine()

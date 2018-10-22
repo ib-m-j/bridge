@@ -16,10 +16,10 @@ class DictArray:
 class ArrayPrinter:
     def __init__(self, array, width = 0, height = 0, borders = True):
         if isinstance(array, dict):
-            print("found dict")
+            #print("found dict")
             self.array = array
         elif isinstance(array, DictArray):
-            print("found dict")
+            #print("found dict")
             self.array = array.dict
             
         if width == 0:
