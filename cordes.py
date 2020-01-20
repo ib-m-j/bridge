@@ -506,8 +506,9 @@ def profile(universe, startSet):
     profileVar = [x for (x,y) in profile]
     return (np.var(profileVar), profile)
 
-def allSizesNine():
-    cSets = CordeSets(9)
+def fullTest(n):
+    print("Full test for n=",n)
+    cSets = CordeSets(n)
     allLines = cSets.allCordeSizes
 
     count = 0
@@ -541,8 +542,14 @@ def allSizesNine():
     print(res)
 
 
+    #below probably only works for n = 9
+    ##############################################
     print("\nProfiles for one line no {}:\n".format(orthogonals[0][1]))
     tester = allLines[orthogonals[0][1]]
+    #we need sum ofnospan and span in profile to be constat = 8 for n=9
+    #below we start ot by restricting the small no span to be 3
+    #and the large nospan to be 5. This should reduce numbver of trials in
+    #the loop as we know sum will be 8 for cordlength 1
     cordeLengthOneSameSmall = []
     cordeLengthOneSameLarge = []
     for testerWithDir in tester.setAllDirections():
@@ -579,7 +586,9 @@ def allSizesNine():
                 print(seta, setb)
                 print(a,b)
                 
-        
+
+
+                
 if __name__ == '__main__':
     
     #simpletest2()
@@ -590,4 +599,4 @@ if __name__ == '__main__':
     #testAllDirections()
     #res = profile(7, set([1,2,3]))
     #print(res)
-    allSizesNine()
+    fullTest(9)
